@@ -3,6 +3,7 @@ package com.dragheadportrait;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
-//        recyclerview.setLayoutManager(new LinearLayoutManager(this));
+        recyclerview.setLayoutManager(new LinearLayoutManager(this));
         initData();
         recyclerview.setAdapter(new mAdapter());
         layout = (DragLayout) findViewById(R.id.draglayout);
