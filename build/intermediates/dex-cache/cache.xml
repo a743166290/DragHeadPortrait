@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="false"
+        jar="/Users/zengyan/Downloads/DragHeadPortrait/jkdrag/build/intermediates/bundles/default/classes.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="25.0.3"
+        sha1="2ebf71be316ecffde915fcb42199139f9a908f0a">
+        <dex dex="/Users/zengyan/Downloads/DragHeadPortrait/demo/build/intermediates/pre-dexed/debug/classes_4533bb37a2bebdd4c5ef7b50bce82b6d274775b2.jar" />
+    </item>
+
+</items>
