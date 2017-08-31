@@ -70,7 +70,7 @@ public class DragImageView extends AppCompatImageView implements View.OnLongClic
                 int dy = (int) (touchY-mLastY);
                 mLastX = touchX;
                 mLastY = touchY;
-                dragViewListener.move(dx,dy);
+                dragViewListener.move(dx,dy,event);
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:

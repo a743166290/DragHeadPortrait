@@ -1,8 +1,13 @@
 package com.jkdrag;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +21,7 @@ import android.widget.RelativeLayout;
  */
 
 public class DragLayout extends RelativeLayout{
+    private final static int INVALIDATE = 0x001;
     private float mDownX ;
     private float mDownY ;
     private LayoutInflater minflater;
@@ -26,6 +32,23 @@ public class DragLayout extends RelativeLayout{
     private boolean movedOutSize;
     private int maxRecylerViewWidth;
     private int maxWindowWidth;
+    private Bitmap movedBitmap;
+    private int[] explosionResIds = new int[]{
+            R.drawable.explosion_one,
+            R.drawable.explosion_two,
+            R.drawable.explosion_three,
+            R.drawable.explosion_four,
+            R.drawable.explosion_five
+    };
+    private float curX; // 当前手指x坐标
+    private float curY; // 当前手指y坐标
+    private static final int EXPLOSION_ANIM_FRAME_INTERVAL = 50; // 爆裂动画帧之间的间隔
+    private Bitmap[] explosionAnim; // 爆裂动画位图
+    private boolean explosionAnimStart; // 爆裂动画是否开始
+    private int explosionAnimNumber; // 爆裂动画帧的个数
+    private int curExplosionAnimIndex; // 爆裂动画当前帧
+    private int explosionAnimWidth; // 爆裂动画帧的宽度
+    private int explosionAnimHeight; // 爆裂动画帧的高度
 
     //设置控件的最长长度
     public void setMaxRecylerViewWidth(int maxRecylerViewWidth) {
@@ -37,6 +60,17 @@ public class DragLayout extends RelativeLayout{
     public void setMovedOutSize(boolean movedOutSize) {
         this.movedOutSize = movedOutSize;
     }
+
+    private Handler mHandler = new Handler(){
+        @Override
+        public void dispatchMessage(Message msg) {
+            super.dispatchMessage(msg);
+            if(msg.what == INVALIDATE){
+                Log.d("d","----------- dispatchMessage");
+                requestLayout();
+            }
+        }
+    };
     public DragLayout(Context context) {
         super(context);
         init(context);
@@ -60,7 +94,49 @@ public class DragLayout extends RelativeLayout{
         maxWindowWidth = dm.widthPixels;
         minflater = LayoutInflater.from(c);
         this.context = c;
+        setWillNotDraw(false);
+    }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (explosionAnimStart) {
+            drawExplosionAnimation(canvas);
+        }
+    }
+    private void drawExplosionAnimation(Canvas canvas) {
+        if (!explosionAnimStart) {
+            return;
+        }
+
+        if (curExplosionAnimIndex < explosionAnimNumber) {
+            canvas.drawBitmap(explosionAnim[curExplosionAnimIndex],
+                    curX - explosionAnimWidth / 2, curY - explosionAnimHeight / 2, null);
+            curExplosionAnimIndex++;
+            // 每隔固定时间执行
+            postInvalidateDelayed(EXPLOSION_ANIM_FRAME_INTERVAL);
+        } else {
+            // 动画结束
+            explosionAnimStart = false;
+            curExplosionAnimIndex = 0;
+            curX = 0;
+            curY = 0;
+            recycleBitmap();
+        }
+    }
+    /**
+     * ************************* 爆炸动画(帧动画) *************************
+     */
+    private void initExplosionAnimation() {
+        if (explosionAnim == null) {
+            explosionAnimNumber = explosionResIds.length;
+            explosionAnim = new Bitmap[explosionAnimNumber];
+            for (int i = 0; i < explosionAnimNumber; i++) {
+                explosionAnim[i] = BitmapFactory.decodeResource(getResources(), explosionResIds[i]);
+            }
+
+            explosionAnimHeight = explosionAnimWidth = explosionAnim[0].getWidth(); // 每帧长宽都一致
+        }
     }
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
@@ -71,7 +147,9 @@ public class DragLayout extends RelativeLayout{
         }
         return false;
     }
-    public void moveView(int dx,int dy){
+    public void moveView(int dx,int dy,MotionEvent ev){
+        curX = ev.getX();
+        curY = ev.getY();
         if(moveHead == null){
             return;
         }
@@ -89,7 +167,10 @@ public class DragLayout extends RelativeLayout{
             int moveX = maxWindowWidth - maxRecylerViewWidth - moveHead.getMeasuredWidth();
             int left = moveHead.getLeft() - moveHead.getMeasuredWidth() / 2;
             if(left  < moveX){
-                setMovedOutSize(true);
+                initExplosionAnimation();
+                explosionAnimStart = true;
+                mHandler.sendEmptyMessage(INVALIDATE);
+
             }else{
                 setMovedOutSize(false);
             }
@@ -101,7 +182,7 @@ public class DragLayout extends RelativeLayout{
         if(moveHead == null) {
             headView.setDrawingCacheEnabled(true);
             headView.buildDrawingCache();  //启用DrawingCache并创建位图
-            Bitmap bitmap = Bitmap.createBitmap(headView.getDrawingCache()); //创建一个DrawingCache的拷贝，因为DrawingCache得到的位图在禁用后会被回收
+            movedBitmap = Bitmap.createBitmap(headView.getDrawingCache()); //创建一个DrawingCache的拷贝，因为DrawingCache得到的位图在禁用后会被回收
             headView.setDrawingCacheEnabled(false);  //禁用DrawingCahce否则会影响性能
             LayoutParams layoutParms =
                     new LayoutParams(headView.getMeasuredWidth(), headView.getMeasuredHeight());
@@ -109,9 +190,22 @@ public class DragLayout extends RelativeLayout{
                     (int)mDownY - headView.getMeasuredHeight() / 2, 0, 0);
             ImageView head = new ImageView(context);
             head.setLayoutParams(layoutParms);
-            head.setImageBitmap(bitmap);
+            head.setImageBitmap(movedBitmap);
             moveHead = head;
             addView(head);
+        }
+    }
+    private void recycleBitmap() {
+        if (explosionAnim != null && explosionAnim.length != 0) {
+            for (int i = 0; i < explosionAnim.length; i++) {
+                if (explosionAnim[i] != null && !explosionAnim[i].isRecycled()) {
+                    explosionAnim[i].recycle();
+                    explosionAnim[i] = null;
+                }
+            }
+            setMovedOutSize(true);
+            movedBitmap.recycle();
+            explosionAnim = null;
         }
     }
 }

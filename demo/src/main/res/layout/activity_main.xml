@@ -4,24 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/background_dark"
     >
-    <!--<View-->
-        <!--android:id="@+id/view"-->
-        <!--android:layout_centerInParent="true"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="100dp"-->
-        <!--android:background="#FFFF0000" />-->
 
-    <!--<com.dragview.DragImageView-->
-        <!--android:id="@+id/iamgeview"-->
-        <!--android:layout_width="50dp"-->
-        <!--android:layout_height="50dp"-->
-        <!--android:layout_marginLeft="200dp"-->
-        <!--android:layout_marginTop="100dp"-->
-        <!--android:background="@color/colorAccent"-->
-        <!--/>-->
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview"
+        android:background="@android:color/holo_blue_dark"
         android:layout_width="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_height="match_parent"/>
