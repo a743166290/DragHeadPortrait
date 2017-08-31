@@ -29,4 +29,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile project(path: ':jkdrag')
     compile 'com.android.support:recyclerview-v7:25.3.1'
+    compile 'com.github.bumptech.glide:glide:3.6.1'
+    compile 'tyrantgit:explosionfield:1.0.1'
 }
