@@ -224,7 +224,6 @@ public class DragLayout extends RelativeLayout{
                     explosionAnim[i] = null;
                 }
             }
-            Log.d("d","-------------- comnig");
             setMovedOutSize(true);
             movedBitmap.recycle();
             explosionAnim = null;
