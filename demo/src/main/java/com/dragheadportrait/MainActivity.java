@@ -5,8 +5,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewDebug;
@@ -15,6 +19,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.jkdrag.DragImageView;
 import com.jkdrag.DragLayout;
+import com.jkdrag.listener.BmAnimationListener;
 import com.jkdrag.listener.DragViewListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerview;
     private List<String> mDatas;
     private DragLayout layout;
-    private ExplosionField mExplosionField;
+    private MAdapter mAdapter;
     private String [] mData = new String[]{
             "http://imgsrc.baidu.com/forum/pic/item/53f082025aafa40f95261179a164034f79f019b6.jpg",
             "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1504176867338&di=37d89903c924100e53cd12c862cd0372&imgtype=0&src=http%3A%2F%2Fimg1.2345.com%2Fduoteimg%2FqqTxImg%2F11%2F2012091910313510745.jpg",
@@ -39,48 +44,38 @@ public class MainActivity extends AppCompatActivity {
             "http://diy.qqjay.com/u/files/2015/0120/10f1ee2b68229aef44f6d0748a1c6de7.jpg",
             "http://img1.imgtn.bdimg.com/it/u=3259547394,1635760435&fm=214&gp=0.jpg"
     };
-//    private GestrueDetectorHelper gestrueDetectorHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
         recyclerview.setLayoutManager(new LinearLayoutManager(this));
         initData();
-        recyclerview.setAdapter(new mAdapter());
+        mAdapter = new MAdapter();
+        recyclerview.setAdapter(mAdapter);
         layout = (DragLayout) findViewById(R.id.draglayout);
-        //手势监听
-//        gestrueDetectorHelper = new GestrueDetectorHelper().init(this)
-//                .setmListener(new GestrueDetectorHelper.GestrueDetectorHelperListener() {
-//                    @Override
-//                    public void swipeRight() {
-//
-//                    }
-//
-//                    @Override
-//                    public void swipeLeft() {
-//
-//                    }
-//
-//                    @Override
-//                    public void swipeTop() {
-//
-//                    }
-//
-//                    @Override
-//                    public void swipeBottom() {
-//
-//                    }
-//                });
+
     }
 
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//
-//        return gestrueDetectorHelper.getmDetector().onTouchEvent(event);
-//
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate( R.menu.options_menu , menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.menu_refush){
+            initData();
+            mAdapter.notifyDataSetChanged();
+        }
+        return true;
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
 
     protected void initData()
     {
@@ -90,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             mDatas.add("" + mData[i]);
         }
     }
-    class mAdapter extends RecyclerView.Adapter<mAdapter.mViewHolder>{
+    class MAdapter extends RecyclerView.Adapter<MAdapter.mViewHolder>{
         @Override
         public mViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             mViewHolder holder = new mViewHolder(LayoutInflater.from(MainActivity.this).inflate(R.layout.item,parent,false));
@@ -101,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(mViewHolder holder,final int position) {
             final DragImageView dragImageView = holder.dragImageView;
             Glide.with(MainActivity.this).load(mDatas.get(position)).centerCrop().into(dragImageView);
-            holder.number.setText(position+"");
             dragImageView.setVisibility(View.VISIBLE);
             dragImageView.setDragViewListener(new DragViewListener() {
                 @Override
@@ -126,16 +120,25 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void up(DragImageView view) {
                     //抬起手事件 移除view
+                    layout.setBmAnimationListener(new BmAnimationListener() {
+                        @Override
+                        public void startAnimation() {
+
+                        }
+
+                        @Override
+                        public void endAnimation() {
+                            if(layout.isMovedOutSize()){
+                                mDatas.remove(position);
+                                notifyDataSetChanged();
+                            }else{
+                                dragImageView.setVisibility(View.VISIBLE);
+                            }
+
+                        }
+                    });
                     layout.removeMovedView();
-                    //判断移除范围有没有出 recylerview
-                    if(layout.isMovedOutSize()){
-                        Log.d(TAG,"delete");
-                        mDatas.remove(position);
-                        notifyDataSetChanged();
-                    }else{
-                        Log.d(TAG,"not delete");
-                        view.setVisibility(View.VISIBLE);
-                    }
+
                 }
             });
 
@@ -148,11 +151,9 @@ public class MainActivity extends AppCompatActivity {
 
         class mViewHolder extends RecyclerView.ViewHolder {
             DragImageView dragImageView;
-            TextView number;
             public mViewHolder(View itemView) {
                 super(itemView);
                 dragImageView = (DragImageView) itemView.findViewById(R.id.item_img);
-                number = (TextView) itemView.findViewById(R.id.number);
             }
         }
     }

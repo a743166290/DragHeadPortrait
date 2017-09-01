@@ -15,6 +15,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.jkdrag.listener.BmAnimationListener;
+
 /**
  * 拖拽布局
  * Created by zengyan on 2017/8/28.
@@ -49,6 +51,11 @@ public class DragLayout extends RelativeLayout{
     private int curExplosionAnimIndex; // 爆裂动画当前帧
     private int explosionAnimWidth; // 爆裂动画帧的宽度
     private int explosionAnimHeight; // 爆裂动画帧的高度
+    private BmAnimationListener bmAnimationListener;
+
+    public void setBmAnimationListener(BmAnimationListener bmAnimationListener) {
+        this.bmAnimationListener = bmAnimationListener;
+    }
 
     //设置控件的最长长度
     public void setMaxRecylerViewWidth(int maxRecylerViewWidth) {
@@ -61,16 +68,7 @@ public class DragLayout extends RelativeLayout{
         this.movedOutSize = movedOutSize;
     }
 
-    private Handler mHandler = new Handler(){
-        @Override
-        public void dispatchMessage(Message msg) {
-            super.dispatchMessage(msg);
-            if(msg.what == INVALIDATE){
-                Log.d("d","----------- dispatchMessage");
-                requestLayout();
-            }
-        }
-    };
+
     public DragLayout(Context context) {
         super(context);
         init(context);
@@ -101,6 +99,9 @@ public class DragLayout extends RelativeLayout{
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (explosionAnimStart) {
+            if(bmAnimationListener != null){
+                bmAnimationListener.startAnimation();
+            }
             drawExplosionAnimation(canvas);
         }
     }
@@ -121,6 +122,9 @@ public class DragLayout extends RelativeLayout{
             curExplosionAnimIndex = 0;
             curX = 0;
             curY = 0;
+            if(bmAnimationListener != null){
+                bmAnimationListener.endAnimation();
+            }
             recycleBitmap();
         }
     }
@@ -148,11 +152,12 @@ public class DragLayout extends RelativeLayout{
         return false;
     }
     public void moveView(int dx,int dy,MotionEvent ev){
-        curX = ev.getX();
-        curY = ev.getY();
+
         if(moveHead == null){
             return;
         }
+        curX = moveHead.getX();
+        curY = moveHead.getY();
         LayoutParams layoutParams = (LayoutParams) moveHead
                 .getLayoutParams();
         _xDelta = layoutParams.leftMargin;
@@ -167,10 +172,13 @@ public class DragLayout extends RelativeLayout{
             int moveX = maxWindowWidth - maxRecylerViewWidth - moveHead.getMeasuredWidth();
             int left = moveHead.getLeft() - moveHead.getMeasuredWidth() / 2;
             if(left  < moveX){
-                initExplosionAnimation();
-                explosionAnimStart = true;
-                mHandler.sendEmptyMessage(INVALIDATE);
-
+                if(bmAnimationListener != null){
+                    Log.d("d","---------- initAnimation");
+                    initExplosionAnimation();
+                    explosionAnimStart = true;
+                    invalidate();
+                }
+                setMovedOutSize(true);
             }else{
                 setMovedOutSize(false);
             }
@@ -203,9 +211,11 @@ public class DragLayout extends RelativeLayout{
                     explosionAnim[i] = null;
                 }
             }
+
             setMovedOutSize(true);
             movedBitmap.recycle();
             explosionAnim = null;
         }
     }
+
 }
