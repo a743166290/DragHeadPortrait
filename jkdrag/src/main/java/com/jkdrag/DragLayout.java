@@ -5,12 +5,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -58,8 +60,15 @@ public class DragLayout extends RelativeLayout{
     }
 
     //设置控件的最长长度
-    public void setMaxRecylerViewWidth(int maxRecylerViewWidth) {
-        this.maxRecylerViewWidth = maxRecylerViewWidth;
+    public void bindRecylerView(final RecyclerView recyclerView){
+        recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                maxRecylerViewWidth = recyclerView.getMeasuredWidth();
+                recyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+
     }
     public boolean isMovedOutSize() {
         return movedOutSize;
@@ -179,10 +188,15 @@ public class DragLayout extends RelativeLayout{
                 }
                 setMovedOutSize(true);
             }else{
+
                 setMovedOutSize(false);
+                if(bmAnimationListener != null){
+                    bmAnimationListener.endAnimation();
+                }
             }
             this.removeView(moveHead);
             moveHead = null;
+            movedBitmap.recycle();
         }
     }
     public void addMovedView(View headView){
@@ -210,7 +224,7 @@ public class DragLayout extends RelativeLayout{
                     explosionAnim[i] = null;
                 }
             }
-
+            Log.d("d","-------------- comnig");
             setMovedOutSize(true);
             movedBitmap.recycle();
             explosionAnim = null;

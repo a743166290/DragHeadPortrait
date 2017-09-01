@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new MAdapter();
         recyclerview.setAdapter(mAdapter);
         layout = (DragLayout) findViewById(R.id.draglayout);
-
+        //需要设置recylerview 的长度已判断出没出屏幕
+        layout.bindRecylerView(recyclerview);
     }
 
     @Override
@@ -99,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
                     view.setVisibility(View.INVISIBLE);
                     //去掉recylerview的touch分发事件
                     dragImageView.disallowInterceptTouchEvent(true);
-                    //需要设置recylerview 的长度已判断出没出屏幕
-                    layout.setMaxRecylerViewWidth(recyclerview.getMeasuredWidth());
+
                 }
 
                 @Override
@@ -125,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
                                 mDatas.remove(position);
                                 notifyDataSetChanged();
                             }else{
+                                Log.d("d","-------- : ----------- movedOut");
                                 dragImageView.setVisibility(View.VISIBLE);
                             }
 
