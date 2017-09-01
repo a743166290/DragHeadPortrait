@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
                                 mDatas.remove(position);
                                 notifyDataSetChanged();
                             }else{
-                                Log.d("d","-------- : ----------- movedOut");
                                 dragImageView.setVisibility(View.VISIBLE);
                             }
 
