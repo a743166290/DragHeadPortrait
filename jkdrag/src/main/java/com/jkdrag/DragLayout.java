@@ -167,13 +167,12 @@ public class DragLayout extends RelativeLayout{
         moveHead.setLayoutParams(layoutParams);
     }
 
-    public void removeMovedView(){
+    public void calculationMoved(){
         if(moveHead != null) {
             int moveX = maxWindowWidth - maxRecylerViewWidth - moveHead.getMeasuredWidth();
             int left = moveHead.getLeft() - moveHead.getMeasuredWidth() / 2;
             if(left  < moveX){
                 if(bmAnimationListener != null){
-                    Log.d("d","---------- initAnimation");
                     initExplosionAnimation();
                     explosionAnimStart = true;
                     invalidate();

@@ -5,17 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewDebug;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.jkdrag.DragImageView;
 import com.jkdrag.DragLayout;
@@ -23,9 +19,6 @@ import com.jkdrag.listener.BmAnimationListener;
 import com.jkdrag.listener.DragViewListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import tyrantgit.explosionfield.ExplosionField;
-
 public class MainActivity extends AppCompatActivity {
     private  final String TAG = getClass().getSimpleName();
     private RecyclerView recyclerview;
@@ -116,10 +109,10 @@ public class MainActivity extends AppCompatActivity {
                     layout.moveView(x,y,ev);
                 }
 
-
+                //抬起手事件 移除view
                 @Override
                 public void up(DragImageView view) {
-                    //抬起手事件 移除view
+                    //动画监听需要放入计算范围之前,不然第一次永远没有动画效果
                     layout.setBmAnimationListener(new BmAnimationListener() {
                         @Override
                         public void startAnimation() {
@@ -137,8 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                     });
-                    layout.removeMovedView();
-
+                    layout.calculationMoved();
                 }
             });
 
