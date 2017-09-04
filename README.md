@@ -1,1 +1,1 @@
-![image](https://github.com/a743166290/DragHeadPortrait/mzdrag.gif)
+![image](https://github.com/a743166290/DragHeadPortrait/blob/master/mzdrag.gif)
