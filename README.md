@@ -1,1 +1,1 @@
-move layout
+![image](https://github.com/a743166290/DragHeadPortrait/blob/master/demo/src/main/res/gif/2017-09-04-01mzdrag.gif)
